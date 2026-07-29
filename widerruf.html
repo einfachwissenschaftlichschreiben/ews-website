@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="favicon.png">
+<title>Vertrag widerrufen — einfach wissenschaftlich schreiben</title>
+<style>
+  body { margin:0; background:#fff; color:#1c1c1c; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; line-height:1.6; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 48px 24px 64px; }
+  h1 { color:#0C1248; font-size:1.4rem; }
+  a { color:#CE3232; }
+  p { font-size:0.95rem; }
+  .back { display:inline-block; margin-bottom:32px; font-size:0.9rem; color:#6b6b6b; text-decoration:none; }
+  label { display:block; margin-bottom:16px; font-size:0.9rem; }
+  input, select, textarea { width:100%; padding:10px 12px; border:1px solid #ccc; border-radius:8px; font-size:1rem; font-family:inherit; margin-top:6px; box-sizing:border-box; }
+  button { padding:12px 20px; background:#0C1248; color:#fff; border:none; border-radius:8px; font-size:1rem; cursor:pointer; }
+  button:disabled { opacity:0.6; cursor:default; }
+  .muted { color:#6b6b6b; font-size:0.85rem; }
+  .error { color:#CE3232; font-size:0.9rem; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="index.html">← zurück</a>
+    <h1>Vertrag widerrufen</h1>
+    <p class="muted" id="intro">Hier kannst Du einen Vertrag (belAnIum oder die Schreibstart-Formel) widerrufen. Das Absenden entscheidet noch nicht automatisch über die Wirksamkeit Deines Widerrufs, wir prüfen das individuell und melden uns bei Dir.</p>
+
+    <form id="widerrufForm">
+      <label>
+        Name
+        <input type="text" name="name" required>
+      </label>
+      <label>
+        E-Mail
+        <input type="email" name="email" required>
+      </label>
+      <label>
+        Produkt
+        <select name="product">
+          <option value="belAnIum">belAnIum</option>
+          <option value="Schreibstart-Formel">Schreibstart-Formel (Kurs)</option>
+          <option value="Sonstiges">Sonstiges</option>
+        </select>
+      </label>
+      <label>
+        Nachricht (optional, z. B. Bestellnummer)
+        <textarea name="message" rows="4"></textarea>
+      </label>
+
+      <p id="formError" class="error" style="display:none;"></p>
+
+      <p class="muted">Bitte beachte unsere <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
+
+      <button type="submit" id="submitBtn">Widerruf bestätigen</button>
+    </form>
+  </div>
+
+  <script>
+    const BACKEND_URL = 'https://ews-ki-assistent-production.up.railway.app';
+    const form = document.getElementById('widerrufForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorEl = document.getElementById('formError');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Wird gesendet …';
+
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/widerruf`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error('request failed');
+
+        document.querySelector('.wrap').innerHTML = `
+          <a class="back" href="index.html">← zurück</a>
+          <h1>Widerruf eingegangen</h1>
+          <p>Wir haben Deine Widerrufserklärung erhalten und Dir eine Eingangsbestätigung per E-Mail geschickt. Wir prüfen Deinen Widerruf und melden uns mit dem Ergebnis bei Dir.</p>
+        `;
+      } catch (err) {
+        errorEl.textContent = 'Da ist etwas schiefgelaufen. Bitte versuch es erneut oder schreib uns direkt.';
+        errorEl.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Widerruf bestätigen';
+      }
+    });
+  </script>
+</body>
+</html>
